@@ -3,476 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photo/Video Broadcast</title>
+    <title>Spotify Live Equalizer</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            margin: 0;
+            background-color: #121212;
+            color: white;
         }
-
         .container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            max-width: 900px;
-            width: 100%;
+            text-align: center;
             padding: 30px;
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-        }
-
-        .login-section {
-            background: #f5f5f5;
-            padding: 20px;
+            background: #181818;
             border-radius: 8px;
-            margin-bottom: 30px;
-            border-left: 4px solid #667eea;
-            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            width: 380px;
+            border: 1px solid #282828;
         }
-
-        .login-section h2 {
-            color: #667eea;
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-
-        .login-section input {
-            padding: 10px;
-            margin: 10px 5px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .login-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.3s;
-        }
-
-        .login-btn:hover {
-            background: #764ba2;
-        }
-
-        .logout-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: background 0.3s;
-            margin-left: 10px;
-        }
-
-        .logout-btn:hover {
-            background: #c82333;
-        }
-
-        .admin-status {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            text-align: center;
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
             font-weight: bold;
-        }
-
-        .admin-section {
-            background: #f5f5f5;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            border-left: 4px solid #667eea;
-        }
-
-        .admin-section h2 {
-            color: #667eea;
-            font-size: 18px;
+            color: white;
+            background-color: #1DB954;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            width: 100%;
             margin-bottom: 15px;
         }
-
-        .upload-area {
-            border: 2px dashed #667eea;
-            border-radius: 8px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: background 0.3s;
-            background: #f9f9f9;
+        button:hover {
+            background-color: #1ed760;
+            transform: scale(1.02);
         }
-
-        .upload-area:hover {
-            background: #efefef;
-        }
-
-        .upload-area p {
-            color: #666;
-            margin-bottom: 10px;
-        }
-
-        input[type="file"] {
-            display: none;
-        }
-
-        .upload-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
+        #status {
+            margin: 15px 0;
             font-size: 14px;
-            transition: background 0.3s;
+            color: #b3b3b3;
         }
-
-        .upload-btn:hover {
-            background: #764ba2;
-        }
-
-        .broadcast-section {
-            text-align: center;
-        }
-
-        .broadcast-section h2 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-
-        #mediaDisplay {
-            max-width: 100%;
-            max-height: 500px;
-            border-radius: 8px;
-            background: #000;
+        .eq-section {
+            margin-top: 25px;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 300px;
+            flex-direction: column;
+            gap: 15px;
+            opacity: 0.3;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
-
-        #mediaDisplay img,
-        #mediaDisplay video {
-            max-width: 100%;
-            max-height: 500px;
-            border-radius: 8px;
+        .eq-section.active {
+            opacity: 1;
+            pointer-events: auto;
         }
-
-        .no-media {
-            color: #999;
-            font-size: 18px;
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
         }
-
-        .status {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
             font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #b3b3b3;
         }
-
-        .status.connected {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        input[type="range"] {
+            width: 100%;
+            accent-color: #1DB954;
         }
-
-        .status.disconnected {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .setup-box {
+            background: #282828;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            text-align: left;
+            line-height: 1.4;
         }
-
-        .viewer-count {
-            text-align: center;
-            color: #666;
-            margin-top: 15px;
-            font-size: 14px;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .login-error {
-            color: #721c24;
-            margin-top: 10px;
-            font-size: 14px;
+        .setup-box input {
+            width: 90%;
+            padding: 8px;
+            margin-top: 8px;
+            background: #3e3e3e;
+            border: 1px solid #535353;
+            color: white;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h1>📺 Photo/Video Broadcast</h1>
-
-        <div class="login-section" id="loginSection">
-            <h2>Admin Login</h2>
-            <input type="password" id="adminPassword" placeholder="Enter admin password" />
-            <button class="login-btn" onclick="loginAdmin()">Login</button>
-            <div id="loginError"></div>
+        <h1>Spotify Equalizer</h1>
+        
+        <div class="setup-box">
+            <strong>1. Configuration Needed:</strong><br>
+            Paste your Spotify Client ID below. You get this from the Spotify Developer Dashboard. Ensure your app's Redirect URI is set to this page's exact URL.
+            <input type="text" id="client-id" placeholder="Paste your Client ID here...">
         </div>
 
-        <div class="admin-status hidden" id="adminStatus">
-            <span>✓ Admin Mode Active</span>
-            <button class="logout-btn" onclick="logoutAdmin()">Logout</button>
-        </div>
+        <button id="auth-btn">Connect Spotify Account</button>
+        <p id="status">Status: Waiting for authentication...</p>
 
-        <div class="admin-section hidden" id="adminPanel">
-            <h2>Admin Panel - Upload Media</h2>
-            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-                <p>Click to upload or drag and drop</p>
-                <p style="font-size: 12px; color: #999;">Photos or Videos</p>
-                <button class="upload-btn">Choose File</button>
+        <!-- Equalizer Sliders -->
+        <div class="eq-section" id="eq-controls">
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>Bass (< 150Hz)</span>
+                    <span id="bass-val">0 dB</span>
+                </div>
+                <input type="range" id="bass" min="-20" max="20" value="0" step="1">
             </div>
-            <input type="file" id="fileInput" accept="image/*,video/*">
-            <div id="uploadStatus"></div>
-        </div>
 
-        <div class="broadcast-section">
-            <h2>📡 Live Broadcast</h2>
-            <div id="mediaDisplay">
-                <p class="no-media">Waiting for content...</p>
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>Mid (1000Hz)</span>
+                    <span id="mid-val">0 dB</span>
+                </div>
+                <input type="range" id="mid" min="-20" max="20" value="0" step="1">
             </div>
-            <div class="viewer-count">
-                Viewers connected: <span id="viewerCount">0</span>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>Treble (> 4000Hz)</span>
+                    <span id="treble-val">0 dB</span>
+                </div>
+                <input type="range" id="treble" min="-20" max="20" value="0" step="1">
             </div>
-            <div id="status" class="status disconnected">Disconnected</div>
         </div>
     </div>
 
+    <!-- Load the official Spotify Web Playback SDK -->
+    <script src="https://scdn.co"></script>
+
     <script>
-        const ADMIN_PASSWORD = 'admin123'; // Change this to your secure password
-        let isAdmin = false;
-        let mediaData = null;
+        let audioCtx;
+        let bassFilter, midFilter, trebleFilter;
+        let player;
 
-        // Admin Login
-        function loginAdmin() {
-            const password = document.getElementById('adminPassword').value;
-            if (password === ADMIN_PASSWORD) {
-                isAdmin = true;
-                localStorage.setItem('adminSession', 'true');
-                document.getElementById('adminPassword').value = '';
-                updateAdminUI();
-            } else {
-                document.getElementById('loginError').innerHTML = '<div class="login-error">❌ Incorrect password</div>';
-                setTimeout(() => {
-                    document.getElementById('loginError').innerHTML = '';
-                }, 3000);
+        // --- STEP 1: AUTHENTICATION HANDLING ---
+        const authBtn = document.getElementById('auth-btn');
+        const statusText = document.getElementById('status');
+        const clientIdInput = document.getElementById('client-id');
+
+        // Check if there is an access token in the URL anchor hash
+        const hash = window.location.hash.substring(1).split('&').reduce((initial, item) => {
+            if (item) {
+                var parts = item.split('=');
+                initial[parts[0]] = decodeURIComponent(parts[1]);
             }
+            return initial;
+        }, {});
+        
+        let token = hash.access_token;
+
+        if (token) {
+            statusText.textContent = "Status: Authenticated! Connecting to Spotify...";
+            authBtn.style.display = "none";
+            document.querySelector('.setup-box').style.display = "none";
         }
 
-        // Admin Logout
-        function logoutAdmin() {
-            isAdmin = false;
-            localStorage.removeItem('adminSession');
-            updateAdminUI();
-        }
-
-        // Update UI based on admin status
-        function updateAdminUI() {
-            const loginSection = document.getElementById('loginSection');
-            const adminStatus = document.getElementById('adminStatus');
-            const adminPanel = document.getElementById('adminPanel');
-
-            if (isAdmin) {
-                loginSection.classList.add('hidden');
-                adminStatus.classList.remove('hidden');
-                adminPanel.classList.remove('hidden');
-            } else {
-                loginSection.classList.remove('hidden');
-                adminStatus.classList.add('hidden');
-                adminPanel.classList.add('hidden');
+        authBtn.addEventListener('click', () => {
+            const clientId = clientIdInput.value.trim();
+            if (!clientId) {
+                alert("Please enter your Spotify Client ID first!");
+                return;
             }
-        }
-
-        // Check if already logged in
-        function checkAdminSession() {
-            if (localStorage.getItem('adminSession') === 'true') {
-                isAdmin = true;
-            }
-            updateAdminUI();
-        }
-
-        // Allow Enter key to login
-        document.addEventListener('DOMContentLoaded', () => {
-            checkAdminSession();
-            document.getElementById('adminPassword').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    loginAdmin();
-                }
-            });
+            
+            const redirectUri = window.location.href.split('#')[0]; // Current page URL
+            const scopes = 'streaming user-read-email user-read-private';
+            
+            window.location = `https://spotify.com{clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}&response_type=token&show_dialog=true`;
         });
 
-        // Handle file upload - only for admins
-        document.getElementById('fileInput').addEventListener('change', (e) => {
-            if (!isAdmin) {
-                alert('Only admins can upload media');
+        // --- STEP 2: SPOTIFY SDK PLAYBACK SETUP ---
+        window.onSpotifyWebPlaybackSDKReady = () => {
+            if (!token) return;
+
+            player = new Spotify.Player({
+                name: 'Web EQ Player Device',
+                getOAuthToken: cb => { cb(token); },
+                volume: 0.8
+            });
+
+            // Triggered when the virtual Spotify speaker device is online
+            player.addListener('ready', ({ device_id }) => {
+                statusText.textContent = `Ready! Open Spotify on your phone/app and select device: "Web EQ Player Device" to start streaming music through the EQ.`;
+                statusText.style.color = "#1DB954";
+                
+                // Initialize the EQ Web Audio Pipeline once user interacts
+                window.addEventListener('click', initAudioPipeline, { once: true });
+            });
+
+            player.addListener('initialization_error', ({ message }) => { console.error(message); });
+            player.addListener('authentication_error', ({ message }) => { statusText.textContent = "Auth expired. Connect again."; });
+
+            player.connect();
+        };
+
+        // --- STEP 3: WEB AUDIO API EQUALIZER PIPELINE ---
+        function initAudioPipeline() {
+            if (audioCtx) return; // Prevent double creation
+
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+            // Find and grab the hidden local HTML5 Video/Audio element the Spotify SDK uses to output audio
+            const spotifyMediaElement = document.querySelector('video') || document.querySelector('audio');
+            
+            if (!spotifyMediaElement) {
+                console.warn("Spotify audio elements not rendered yet. Click again when music plays.");
                 return;
             }
 
-            const file = e.target.files[0];
-            if (!file) return;
+            const source = audioCtx.createMediaElementSource(spotifyMediaElement);
 
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const dataUrl = event.target.result;
-                    mediaData = {
-                        data: dataUrl,
-                        type: file.type,
-                        name: file.name,
-                        timestamp: Date.now(),
-                        uploadedBy: 'admin'
-                    };
+            // Create EQ Nodes
+            bassFilter = audioCtx.createBiquadFilter();
+            bassFilter.type = 'lowshelf';
+            bassFilter.frequency.value = 150;
+            bassFilter.gain.value = 0;
 
-                    // Store in localStorage for other tabs/windows
-                    try {
-                        localStorage.setItem('broadcastMedia', JSON.stringify(mediaData));
-                        localStorage.setItem('mediaTimestamp', Date.now().toString());
-                        // Trigger storage event for same-browser tabs
-                        window.dispatchEvent(new StorageEvent('storage', {
-                            key: 'broadcastMedia',
-                            newValue: JSON.stringify(mediaData),
-                            url: window.location.href
-                        }));
-                    } catch (e) {
-                        console.error('localStorage full or unavailable:', e);
-                    }
+            midFilter = audioCtx.createBiquadFilter();
+            midFilter.type = 'peaking';
+            midFilter.Q.value = 1.0;
+            midFilter.frequency.value = 1000;
+            midFilter.gain.value = 0;
 
-                    displayMedia(mediaData);
+            trebleFilter = audioCtx.createBiquadFilter();
+            trebleFilter.type = 'highshelf';
+            trebleFilter.frequency.value = 4000;
+            trebleFilter.gain.value = 0;
 
-                    document.getElementById('uploadStatus').innerHTML = `<div class="status connected">✓ Media broadcasted: ${file.name}</div>`;
-                    setTimeout(() => {
-                        document.getElementById('uploadStatus').innerHTML = '';
-                    }, 3000);
-                } catch (err) {
-                    console.error('Error uploading media:', err);
-                    document.getElementById('uploadStatus').innerHTML = `<div class="login-error">Error uploading media</div>`;
-                }
-            };
+            // Connect: Spotify Element -> Bass -> Mid -> Treble -> Speakers
+            source.connect(bassFilter);
+            bassFilter.connect(midFilter);
+            midFilter.connect(trebleFilter);
+            trebleFilter.connect(audioCtx.destination);
 
-            reader.readAsDataURL(file);
-        });
+            // Activate sliders in UI
+            document.getElementById('eq-controls').classList.add('active');
 
-        // Display media in broadcast area
-        function displayMedia(media) {
-            try {
-                const display = document.getElementById('mediaDisplay');
-                if (!display) return;
-                
-                display.innerHTML = '';
-
-                if (!media || !media.type) {
-                    display.innerHTML = '<p class="no-media">Waiting for content...</p>';
-                    return;
-                }
-
-                if (media.type.startsWith('image')) {
-                    const img = document.createElement('img');
-                    img.src = media.data;
-                    img.onerror = () => {
-                        console.error('Image failed to load');
-                        display.innerHTML = '<p class="no-media">Image failed to load</p>';
-                    };
-                    display.appendChild(img);
-                } else if (media.type.startsWith('video')) {
-                    const video = document.createElement('video');
-                    video.src = media.data;
-                    video.controls = true;
-                    video.autoplay = true;
-                    video.onerror = () => {
-                        console.error('Video failed to load');
-                        display.innerHTML = '<p class="no-media">Video failed to load</p>';
-                    };
-                    display.appendChild(video);
-                }
-            } catch (err) {
-                console.error('Error displaying media:', err);
-            }
+            setupSliderListener('bass', bassFilter, 'bass-val');
+            setupSliderListener('mid', midFilter, 'mid-val');
+            setupSliderListener('treble', trebleFilter, 'treble-val');
         }
 
-        // Update connection status
-        function updateStatus(connected) {
-            const status = document.getElementById('status');
-            status.textContent = '✓ Connected';
-            status.className = 'status connected';
-        }
+        function setupSliderListener(sliderId, filterNode, valDisplayId) {
+            const slider = document.getElementById(sliderId);
+            const display = document.getElementById(valDisplayId);
 
-        // Poll for updates from other tabs
-        let lastMediaTimestamp = 0;
-        
-        function pollMedia() {
-            try {
-                const stored = localStorage.getItem('broadcastMedia');
-                if (stored) {
-                    const media = JSON.parse(stored);
-                    if (media && media.timestamp && media.timestamp > lastMediaTimestamp) {
-                        lastMediaTimestamp = media.timestamp;
-                        displayMedia(media);
-                    }
+            slider.addEventListener('input', (e) => {
+                const value = e.target.value;
+                display.textContent = `${value} dB`;
+                if (filterNode) {
+                    filterNode.gain.value = value;
                 }
-            } catch (err) {
-                console.error('Error polling media:', err);
-            }
+            });
         }
-
-        // Listen for storage changes from other tabs
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'broadcastMedia' && e.newValue) {
-                try {
-                    const media = JSON.parse(e.newValue);
-                    if (media) {
-                        lastMediaTimestamp = media.timestamp || 0;
-                        displayMedia(media);
-                    }
-                } catch (err) {
-                    console.error('Error processing storage event:', err);
-                }
-            }
-        });
-
-        setInterval(pollMedia, 500);
-        pollMedia();
-
-        // Update viewer count in localStorage
-        function updateViewerCount() {
-            let count = parseInt(localStorage.getItem('viewerCount') || '0') + 1;
-            localStorage.setItem('viewerCount', count);
-            document.getElementById('viewerCount').textContent = count;
-        }
-
-        updateViewerCount();
-
-        // Reset viewer count when page closes
-        window.addEventListener('beforeunload', () => {
-            let count = Math.max(0, parseInt(localStorage.getItem('viewerCount') || '1') - 1);
-            localStorage.setItem('viewerCount', count);
-        });
-
-        updateStatus(true);
     </script>
 </body>
 </html>
