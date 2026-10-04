@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spotify Live Equalizer</title>
+    <title>Working Live Equalizer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,48 +22,26 @@
             background: #181818;
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            width: 380px;
+            width: 350px;
             border: 1px solid #282828;
         }
-        button {
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: bold;
-            color: white;
-            background-color: #1DB954;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: transform 0.2s, background 0.2s;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-        button:hover {
-            background-color: #1ed760;
-            transform: scale(1.02);
-        }
-        #status {
-            margin: 15px 0;
-            font-size: 14px;
+        input[type="file"] {
+            margin: 20px 0;
             color: #b3b3b3;
         }
+        audio {
+            width: 100%;
+            margin-bottom: 20px;
+        }
         .eq-section {
-            margin-top: 25px;
             display: flex;
             flex-direction: column;
             gap: 15px;
-            opacity: 0.3;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-        .eq-section.active {
-            opacity: 1;
-            pointer-events: auto;
+            text-align: left;
         }
         .slider-group {
             display: flex;
             flex-direction: column;
-            text-align: left;
         }
         .slider-label {
             display: flex;
@@ -75,44 +53,21 @@
         }
         input[type="range"] {
             width: 100%;
-            accent-color: #1DB954;
-        }
-        .setup-box {
-            background: #282828;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            text-align: left;
-            line-height: 1.4;
-        }
-        .setup-box input {
-            width: 90%;
-            padding: 8px;
-            margin-top: 8px;
-            background: #3e3e3e;
-            border: 1px solid #535353;
-            color: white;
-            border-radius: 4px;
+            accent-color: #007bff;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Spotify Equalizer</h1>
+        <h1>Audio File EQ</h1>
+        <p style="color: #b3b3b3; font-size: 14px;">Select any local music file (MP3/WAV) to use the real-time equalizer sliders:</p>
         
-        <div class="setup-box">
-            <strong>1. Configuration Needed:</strong><br>
-            Paste your Spotify Client ID below. You get this from the Spotify Developer Dashboard. Ensure your app's Redirect URI is set to this page's exact URL.
-            <input type="text" id="client-id" placeholder="Paste your Client ID here...">
-        </div>
+        <input type="file" id="audio-file" accept="audio/*">
+        <audio id="audio-player" controls></audio>
 
-        <button id="auth-btn">Connect Spotify Account</button>
-        <p id="status">Status: Waiting for authentication...</p>
-
-        <!-- Equalizer Sliders -->
-        <div class="eq-section" id="eq-controls">
+        <!-- Equalizer UI Sliders -->
+        <div class="eq-section">
             <div class="slider-group">
                 <div class="slider-label">
                     <span>Bass (< 150Hz)</span>
@@ -139,116 +94,60 @@
         </div>
     </div>
 
-    <!-- Load the official Spotify Web Playback SDK -->
-    <script src="https://scdn.co"></script>
-
     <script>
-        let audioCtx;
-        let bassFilter, midFilter, trebleFilter;
-        let player;
-
-        // --- STEP 1: AUTHENTICATION HANDLING ---
-        const authBtn = document.getElementById('auth-btn');
-        const statusText = document.getElementById('status');
-        const clientIdInput = document.getElementById('client-id');
-
-        // Check if there is an access token in the URL anchor hash
-        const hash = window.location.hash.substring(1).split('&').reduce((initial, item) => {
-            if (item) {
-                var parts = item.split('=');
-                initial[parts[0]] = decodeURIComponent(parts[1]);
-            }
-            return initial;
-        }, {});
+        const fileInput = document.getElementById('audio-file');
+        const audio = document.getElementById('audio-player');
         
-        let token = hash.access_token;
+        let audioCtx;
+        let source;
+        let bassFilter, midFilter, trebleFilter;
 
-        if (token) {
-            statusText.textContent = "Status: Authenticated! Connecting to Spotify...";
-            authBtn.style.display = "none";
-            document.querySelector('.setup-box').style.display = "none";
-        }
+        // Triggers immediately when a user selects an audio file
+        fileInput.addEventListener('change', function() {
+            const files = this.files;
+            if (files.length === 0) return;
 
-        authBtn.addEventListener('click', () => {
-            const clientId = clientIdInput.value.trim();
-            if (!clientId) {
-                alert("Please enter your Spotify Client ID first!");
-                return;
-            }
-            
-            const redirectUri = window.location.href.split('#')[0]; // Current page URL
-            const scopes = 'streaming user-read-email user-read-private';
-            
-            window.location = `https://spotify.com{clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}&response_type=token&show_dialog=true`;
+            // Load the chosen file into the browser audio player
+            const fileURL = URL.createObjectURL(files[0]);
+            audio.src = fileURL;
+
+            // Construct the processing graph and start playing
+            initAudioContext();
+            audio.play();
         });
 
-        // --- STEP 2: SPOTIFY SDK PLAYBACK SETUP ---
-        window.onSpotifyWebPlaybackSDKReady = () => {
-            if (!token) return;
-
-            player = new Spotify.Player({
-                name: 'Web EQ Player Device',
-                getOAuthToken: cb => { cb(token); },
-                volume: 0.8
-            });
-
-            // Triggered when the virtual Spotify speaker device is online
-            player.addListener('ready', ({ device_id }) => {
-                statusText.textContent = `Ready! Open Spotify on your phone/app and select device: "Web EQ Player Device" to start streaming music through the EQ.`;
-                statusText.style.color = "#1DB954";
-                
-                // Initialize the EQ Web Audio Pipeline once user interacts
-                window.addEventListener('click', initAudioPipeline, { once: true });
-            });
-
-            player.addListener('initialization_error', ({ message }) => { console.error(message); });
-            player.addListener('authentication_error', ({ message }) => { statusText.textContent = "Auth expired. Connect again."; });
-
-            player.connect();
-        };
-
-        // --- STEP 3: WEB AUDIO API EQUALIZER PIPELINE ---
-        function initAudioPipeline() {
-            if (audioCtx) return; // Prevent double creation
+        function initAudioContext() {
+            if (audioCtx) return; // Prevent recreation if the graph is already built
 
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            source = audioCtx.createMediaElementSource(audio);
 
-            // Find and grab the hidden local HTML5 Video/Audio element the Spotify SDK uses to output audio
-            const spotifyMediaElement = document.querySelector('video') || document.querySelector('audio');
-            
-            if (!spotifyMediaElement) {
-                console.warn("Spotify audio elements not rendered yet. Click again when music plays.");
-                return;
-            }
-
-            const source = audioCtx.createMediaElementSource(spotifyMediaElement);
-
-            // Create EQ Nodes
+            // 1. Low-shelf filter handles frequencies below the boundary (Bass)
             bassFilter = audioCtx.createBiquadFilter();
             bassFilter.type = 'lowshelf';
             bassFilter.frequency.value = 150;
-            bassFilter.gain.value = 0;
+            bassFilter.gain.value = document.getElementById('bass').value;
 
+            // 2. Peaking filter creates a bell-curve around a center frequency (Mids)
             midFilter = audioCtx.createBiquadFilter();
             midFilter.type = 'peaking';
             midFilter.Q.value = 1.0;
             midFilter.frequency.value = 1000;
-            midFilter.gain.value = 0;
+            midFilter.gain.value = document.getElementById('mid').value;
 
+            // 3. High-shelf filter handles frequencies above the boundary (Treble)
             trebleFilter = audioCtx.createBiquadFilter();
             trebleFilter.type = 'highshelf';
             trebleFilter.frequency.value = 4000;
-            trebleFilter.gain.value = 0;
+            trebleFilter.gain.value = document.getElementById('treble').value;
 
-            // Connect: Spotify Element -> Bass -> Mid -> Treble -> Speakers
+            // Route the pipeline: File -> Bass -> Mid -> Treble -> Speakers
             source.connect(bassFilter);
             bassFilter.connect(midFilter);
             midFilter.connect(trebleFilter);
             trebleFilter.connect(audioCtx.destination);
 
-            // Activate sliders in UI
-            document.getElementById('eq-controls').classList.add('active');
-
+            // Link sliders to directly change the hardware filter nodes instantly
             setupSliderListener('bass', bassFilter, 'bass-val');
             setupSliderListener('mid', midFilter, 'mid-val');
             setupSliderListener('treble', trebleFilter, 'treble-val');
@@ -267,5 +166,6 @@
             });
         }
     </script>
+
 </body>
 </html>
