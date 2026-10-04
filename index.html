@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Working Live Equalizer</title>
+    <title>Working Live Audio Equalizer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -61,7 +61,7 @@
 
     <div class="container">
         <h1>Audio File EQ</h1>
-        <p style="color: #b3b3b3; font-size: 14px;">Select any local music file (MP3/WAV) to use the real-time equalizer sliders:</p>
+        <p style="color: #b3b3b3; font-size: 14px;">Select any music file (MP3/WAV) from your device to test the real-time equalizer:</p>
         
         <input type="file" id="audio-file" accept="audio/*">
         <audio id="audio-player" controls></audio>
@@ -102,52 +102,52 @@
         let source;
         let bassFilter, midFilter, trebleFilter;
 
-        // Triggers immediately when a user selects an audio file
+        // Run as soon as you select an audio track file
         fileInput.addEventListener('change', function() {
             const files = this.files;
             if (files.length === 0) return;
 
-            // Load the chosen file into the browser audio player
+            // Mount the music file safely inside the browser
             const fileURL = URL.createObjectURL(files[0]);
             audio.src = fileURL;
 
-            // Construct the processing graph and start playing
+            // Wire up the virtual equalizer graph and start playing
             initAudioContext();
             audio.play();
         });
 
         function initAudioContext() {
-            if (audioCtx) return; // Prevent recreation if the graph is already built
+            if (audioCtx) return; // Stop if nodes are already initialized
 
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             source = audioCtx.createMediaElementSource(audio);
 
-            // 1. Low-shelf filter handles frequencies below the boundary (Bass)
+            // 1. Bass Configuration (Lowshelf captures frequencies below boundary)
             bassFilter = audioCtx.createBiquadFilter();
             bassFilter.type = 'lowshelf';
             bassFilter.frequency.value = 150;
             bassFilter.gain.value = document.getElementById('bass').value;
 
-            // 2. Peaking filter creates a bell-curve around a center frequency (Mids)
+            // 2. Mid Configuration (Peaking curves directly around center frequency)
             midFilter = audioCtx.createBiquadFilter();
             midFilter.type = 'peaking';
             midFilter.Q.value = 1.0;
             midFilter.frequency.value = 1000;
             midFilter.gain.value = document.getElementById('mid').value;
 
-            // 3. High-shelf filter handles frequencies above the boundary (Treble)
+            // 3. Treble Configuration (Highshelf captures frequencies above boundary)
             trebleFilter = audioCtx.createBiquadFilter();
             trebleFilter.type = 'highshelf';
             trebleFilter.frequency.value = 4000;
             trebleFilter.gain.value = document.getElementById('treble').value;
 
-            // Route the pipeline: File -> Bass -> Mid -> Treble -> Speakers
+            // Form the live loop: File -> Bass -> Mid -> Treble -> Hardware Output Speakers
             source.connect(bassFilter);
             bassFilter.connect(midFilter);
             midFilter.connect(trebleFilter);
             trebleFilter.connect(audioCtx.destination);
 
-            // Link sliders to directly change the hardware filter nodes instantly
+            // Attach dynamic listener adjustments to the hardware sliders
             setupSliderListener('bass', bassFilter, 'bass-val');
             setupSliderListener('mid', midFilter, 'mid-val');
             setupSliderListener('treble', trebleFilter, 'treble-val');
