@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Login Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #121212;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 30px;
+            background: #181818;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            width: 350px;
+            border: 1px solid #282828;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #1DB954;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+        }
+        button:hover {
+            background-color: #1ed760;
+        }
+        input {
+            width: 90%;
+            padding: 8px;
+            margin-top: 10px;
+            background: #3e3e3e;
+            border: 1px solid #535353;
+            color: white;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Spotify Connection</h1>
+        <div id="login-area">
+            <p>Paste your Spotify Client ID to test the redirect:</p>
+            <input type="text" id="client-id" placeholder="Client ID...">
+            <button id="auth-btn">Log In via Spotify</button>
+        </div>
+        <p id="status">Status: Ready to connect.</p>
+    </div>
+
+    <script>
+        const authBtn = document.getElementById('auth-btn');
+        const clientIdInput = document.getElementById('client-id');
+        const statusText = document.getElementById('status');
+
+        // 1. Check if we are returning from Spotify with a token
+        const hash = window.location.hash.substring(1).split('&').reduce((initial, item) => {
+            if (item) {
+                var parts = item.split('=');
+                initial[parts[0]] = decodeURIComponent(parts[1]);
+            }
+            return initial;
+        }, {});
+
+        if (hash.access_token) {
+            document.getElementById('login-area').style.display = 'none';
+            statusText.textContent = "Status: Successfully logged in! Token received.";
+            statusText.style.color = "#1DB954";
+            console.log("Access Token:", hash.access_token);
+        }
+
+        // 2. Fix the redirect logic to properly open the login window
+        authBtn.addEventListener('click', () => {
+            const clientId = clientIdInput.value.trim();
+            if (!clientId) {
+                alert("Please enter a valid Client ID!");
+                return;
+            }
+
+            // Get the clean URL without any existing hashes
+            const redirectUri = window.location.href.split('#')[0];
+            const scopes = 'user-read-private user-read-email';
+
+            // Correctly construct the official Spotify authorization link
+            const spotifyAuthUrl = `https://spotify.com` +
+                `?client_id=${encodeURIComponent(clientId)}` +
+                `&response_type=token` +
+                `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+                `&scope=${encodeURIComponent(scopes)}` +
+                `&show_dialog=true`;
+
+            // Redirect the browser window to Spotify's login page
+            window.location.href = spotifyAuthUrl;
+        });
+    </script>
+</body>
+</html>
